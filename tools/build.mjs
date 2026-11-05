@@ -20,7 +20,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { webcrypto as crypto } from 'node:crypto';
+import { webcrypto as crypto, createHash } from 'node:crypto';
 import { createInterface } from 'node:readline';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -71,7 +71,9 @@ function splitPage(name, html) {
   return { title, desc, style, nav, html: body[1], script: body[2] };
 }
 
-function shell(name, p) {
+const ver = (text) => createHash('sha256').update(text).digest('hex').slice(0, 10);
+
+function shell(name, p, v) {
   return `<!doctype html>
 <html lang="nl">
 <head>
@@ -80,7 +82,7 @@ function shell(name, p) {
 <meta name="robots" content="noindex, nofollow">
 <title>${p.title}</title>
 <meta name="description" content="${p.desc}">
-<link rel="stylesheet" href="assets/theme.css">
+<link rel="stylesheet" href="assets/theme.css?v=${v.theme}">
 <script src="assets/d3.v7.9.0.min.js"></script>
 </head>
 <body>
@@ -91,16 +93,17 @@ ${p.nav}
     <p class="gate-sub">Deze pagina is beveiligd. Vul het wachtwoord in.</p>
     <input type="text" name="username" value="abdomen" autocomplete="username" hidden>
     <label class="gate-field">Wachtwoord
-      <input type="password" id="gate-pw" autocomplete="current-password" required autofocus>
+      <input type="password" id="gate-pw" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" required autofocus>
     </label>
     <label class="gate-check"><input type="checkbox" id="gate-remember"> Onthouden op dit apparaat</label>
     <button type="submit" id="gate-btn">Openen</button>
     <p class="gate-msg" id="gate-msg" role="status"></p>
   </form>
 </div>
-<script src="data/data.enc.js"></script>
-<script src="data/${name}.enc.js"></script>
-<script src="assets/gate.js"></script>
+<script>window.DASH_V = "${v.dash}";</script>
+<script src="data/data.enc.js?v=${v.data}"></script>
+<script src="data/${name}.enc.js?v=${v.page}"></script>
+<script src="assets/gate.js?v=${v.gate}"></script>
 </body>
 </html>
 `;
@@ -108,20 +111,32 @@ ${p.nav}
 
 async function build(pw) {
   for (const f of SRC_FILES) if (!existsSync(join(SRC, f))) throw new Error('Ontbreekt: src/' + f + ' (zet src/ terug met --unpack)');
-  const salt = crypto.getRandomValues(new Uint8Array(16));
+  // Zelfde salt als de vorige build (als het wachtwoord gelijk is), zodat de sleutel gelijk blijft:
+  // oude en nieuwe bestanden in een browsercache passen dan bij elkaar en "Onthouden" blijft geldig.
+  let salt = crypto.getRandomValues(new Uint8Array(16));
+  if (existsSync(join(ROOT, 'src.enc'))) {
+    try {
+      const old = JSON.parse(readFileSync(join(ROOT, 'src.enc'), 'utf8'));
+      if (old.kdf.iter === ITER) { const s0 = unb64(old.kdf.salt); await decrypt(await deriveKey(pw, s0, ITER), old.files); salt = s0; }
+    } catch { /* ander wachtwoord: nieuwe salt */ }
+  }
   const key = await deriveKey(pw, salt, ITER);
   const kdf = { salt: b64(salt), iter: ITER };
   mkdirSync(join(ROOT, 'data'), { recursive: true });
 
   const csv = readFileSync(join(SRC, CSV), 'utf8');
   const data = { kdf, csv: await encrypt(key, csv), csvName: CSV };
-  writeFileSync(join(ROOT, 'data', 'data.enc.js'), '// Versleuteld met tools/build.mjs\nwindow.ENC_DATA = ' + JSON.stringify(data) + ';\n');
+  const dataJs = '// Versleuteld met tools/build.mjs\nwindow.ENC_DATA = ' + JSON.stringify(data) + ';\n';
+  writeFileSync(join(ROOT, 'data', 'data.enc.js'), dataJs);
+  const asset = (f) => ver(readFileSync(join(ROOT, 'assets', f), 'utf8'));
+  const v = { data: ver(dataJs), theme: asset('theme.css'), gate: asset('gate.js'), dash: asset('dash.js') };
 
   for (const name of PAGES) {
     const p = splitPage(name, readFileSync(join(SRC, name + '.html'), 'utf8'));
     const payload = JSON.stringify({ style: p.style, html: p.html, script: p.script });
-    writeFileSync(join(ROOT, 'data', name + '.enc.js'), '// Versleuteld met tools/build.mjs\nwindow.ENC_PAGE = ' + JSON.stringify({ kdf, page: await encrypt(key, payload) }) + ';\n');
-    writeFileSync(join(ROOT, name + '.html'), shell(name, p));
+    const pageJs = '// Versleuteld met tools/build.mjs\nwindow.ENC_PAGE = ' + JSON.stringify({ kdf, page: await encrypt(key, payload) }) + ';\n';
+    writeFileSync(join(ROOT, 'data', name + '.enc.js'), pageJs);
+    writeFileSync(join(ROOT, name + '.html'), shell(name, p, { ...v, page: ver(pageJs) }));
   }
 
   const files = Object.fromEntries(SRC_FILES.map((f) => [f, readFileSync(join(SRC, f), 'utf8')]));

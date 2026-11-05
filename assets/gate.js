@@ -49,7 +49,7 @@
     var st = document.createElement('style'); st.textContent = page.style; document.head.append(st);
     document.getElementById('dash-root').innerHTML = page.html;
     window.DASH_DATA = {bezetting: {csv: csv}};
-    return loadScript('assets/dash.js').then(function () {
+    return loadScript('assets/dash.js' + (window.DASH_V ? '?v=' + window.DASH_V : '')).then(function () {
       var s = document.createElement('script'); s.textContent = page.script; document.body.append(s);
       var link = document.getElementById('csv-link');
       if (link) {
@@ -67,14 +67,20 @@
 
   function unlock(raw) {
     return decrypt(raw, P.page).then(function (pageText) {
-      return decrypt(raw, D.csv).then(function (csv) { return render(JSON.parse(pageText), csv); });
+      return decrypt(raw, D.csv).then(function (csv) { return render(JSON.parse(pageText), csv); }, function () {
+        var err = new Error('stale'); err.stale = true; throw err;
+      });
     });
+  }
+  function staleMsg() {
+    form.hidden = false; btn.disabled = false;
+    setMsg('Je browser heeft nog een oude versie van de data. Ververs de pagina (Cmd+Shift+R op Mac, Ctrl+F5 op Windows) en probeer opnieuw.', true);
   }
 
   var cached = get(STORE);
   if (cached) {
     form.hidden = true;
-    unlock(b64d(cached)).catch(function () { clear(); form.hidden = false; });
+    unlock(b64d(cached)).catch(function (e) { if (e && e.stale) return staleMsg(); clear(); form.hidden = false; });
   }
 
   form.addEventListener('submit', function (e) {
@@ -83,14 +89,18 @@
     var remember = document.getElementById('gate-remember').checked;
     btn.disabled = true;
     setMsg('Bezig met openen…');
-    deriveRaw(pw).then(function (raw) {
-      return decrypt(raw, P.page).then(function () {
-        put(STORE, b64e(raw), remember);
-        return unlock(raw);
-      });
-    }).catch(function () {
+    var tryPw = function (p) { return deriveRaw(p).then(function (raw) { return decrypt(raw, P.page).then(function () { return raw; }); }); };
+    tryPw(pw).catch(function () {
+      // spatie aan begin of eind (bijv. door kopiëren of autocorrectie) negeren
+      if (pw.trim() !== pw) return tryPw(pw.trim());
+      throw new Error('pw');
+    }).then(function (raw) {
+      put(STORE, b64e(raw), remember);
+      return unlock(raw);
+    }).catch(function (e) {
+      if (e && e.stale) return staleMsg();
       btn.disabled = false;
-      setMsg('Onjuist wachtwoord.', true);
+      setMsg('Onjuist wachtwoord. Let op hoofdletters en het uitroepteken.', true);
       document.getElementById('gate-pw').select();
     });
   });
