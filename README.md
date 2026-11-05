@@ -1,8 +1,9 @@
 # Bezetting abdomenradiologie (Amsterdam UMC)
 
-Twee dashboards over de FTE-bezetting van stafleden en fellows in de groep Abdomen,
+Een MT-overzicht en twee dashboards over de FTE-bezetting van stafleden en fellows in de groep Abdomen,
 op basis van het Medspace-rooster (week 1 2023 t/m week 44 2026).
 
+- **[MT-overzicht](index.html)**: in één scherm hoe de sectie ervoor staat: kerncijfers, signalen en trend.
 - **[Bezetting abdomenradiologie](bezetting.html)**: interactief overzicht van FTE per taak per periode.
 - **[Analyse FTE abdomen verslag](analyse.html)**: analyse van de tijd voor abdomen verslag, met vergelijking van jaren of zelfgekozen periodes.
 
@@ -25,8 +26,7 @@ op GitHub. Na het inloggen ontsleutelt de browser alles lokaal.
 
 | Pad | Inhoud |
 | --- | --- |
-| `index.html` | Openbare overzichtspagina (bevat geen cijfers) |
-| `bezetting.html`, `analyse.html` | Wachtwoordscherm; de inhoud staat versleuteld in `data/` |
+| `index.html`, `bezetting.html`, `analyse.html` | Wachtwoordscherm; de inhoud staat versleuteld in `data/` |
 | `data/*.enc.js` | Versleutelde pagina-inhoud en data |
 | `src.enc` | Versleutelde kopie van de leesbare bronnen (`src/`) |
 | `assets/gate.js` | Ontsleutelt na het inloggen |
@@ -43,7 +43,7 @@ De leesbare bronnen staan in `src/`, dat **niet** in git staat (zie `.gitignore`
 # 1. Bronnen terugzetten uit src.enc (vraagt om het wachtwoord)
 node tools/build.mjs --unpack
 
-# 2. Pas src/bezetting.html, src/analyse.html of src/bezetting-abdomen-2023-2026.csv aan
+# 2. Pas src/index.html, src/bezetting.html, src/analyse.html of src/bezetting-abdomen-2023-2026.csv aan
 
 # 3. Opnieuw versleutelen en de pagina's bouwen (vraagt om het wachtwoord)
 node tools/build.mjs

@@ -3,7 +3,7 @@
  * Bouwt de met een wachtwoord versleutelde pagina's.
  *
  * De leesbare bronnen staan in src/ (niet in git):
- *   src/bezetting.html, src/analyse.html, src/bezetting-abdomen-2023-2026.csv
+ *   src/index.html, src/bezetting.html, src/analyse.html, src/bezetting-abdomen-2023-2026.csv
  *
  * Gebruik (Node 18 of nieuwer, geen extra pakketten nodig):
  *   SITE_PASSWORD='...' node tools/build.mjs           bouw de site uit src/
@@ -25,7 +25,7 @@ import { createInterface } from 'node:readline';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'src');
-const PAGES = ['bezetting', 'analyse'];
+const PAGES = ['index', 'bezetting', 'analyse'];
 const CSV = 'bezetting-abdomen-2023-2026.csv';
 const SRC_FILES = [...PAGES.map((p) => p + '.html'), CSV];
 const ITER = 600000;
