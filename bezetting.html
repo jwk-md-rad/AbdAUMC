@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Bezetting abdomenradiologie</title>
+<meta name="description" content="FTE per taak per week voor stafleden en fellows in de groep Abdomen, Amsterdam UMC, uit het Medspace-rooster 2023–2026.">
+<link rel="stylesheet" href="assets/theme.css">
+<script src="assets/d3.v7.9.0.min.js"></script>
+</head>
+<body>
+<nav class="site-nav" aria-label="Pagina's">
+  <a href="index.html">Overzicht</a>
+  <a href="bezetting.html" aria-current="page">Bezetting abdomenradiologie</a>
+  <a href="analyse.html">Analyse FTE abdomen verslag</a>
+  <span class="spacer"></span>
+  <a href="#" id="csv-link" hidden>Data (CSV)</a>
+  <a href="#" id="logout-link" hidden>Uitloggen</a>
+</nav>
+<div id="dash-root">
+  <form class="gate" id="gate" autocomplete="on">
+    <h1 class="gate-title">Bezetting abdomenradiologie</h1>
+    <p class="gate-sub">Deze pagina is beveiligd. Vul het wachtwoord in.</p>
+    <input type="text" name="username" value="abdomen" autocomplete="username" hidden>
+    <label class="gate-field">Wachtwoord
+      <input type="password" id="gate-pw" autocomplete="current-password" required autofocus>
+    </label>
+    <label class="gate-check"><input type="checkbox" id="gate-remember"> Onthouden op dit apparaat</label>
+    <button type="submit" id="gate-btn">Openen</button>
+    <p class="gate-msg" id="gate-msg" role="status"></p>
+  </form>
+</div>
+<script src="data/data.enc.js"></script>
+<script src="data/bezetting.enc.js"></script>
+<script src="assets/gate.js"></script>
+</body>
+</html>
