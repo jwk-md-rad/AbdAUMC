@@ -45,10 +45,11 @@
     return new Promise(function (res, rej) { var s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.body.append(s); });
   }
 
-  function render(page, csv) {
+  function render(page, csv, extra) {
     var st = document.createElement('style'); st.textContent = page.style; document.head.append(st);
     document.getElementById('dash-root').innerHTML = page.html;
     window.DASH_DATA = {bezetting: {csv: csv}};
+    for (var id in (extra || {})) window.DASH_DATA[id] = {csv: extra[id]};
     return loadScript('assets/dash.js' + (window.DASH_V ? '?v=' + window.DASH_V : '')).then(function () {
       var s = document.createElement('script'); s.textContent = page.script; document.body.append(s);
       var link = document.getElementById('csv-link');
@@ -67,7 +68,13 @@
 
   function unlock(raw) {
     return decrypt(raw, P.page).then(function (pageText) {
-      return decrypt(raw, D.csv).then(function (csv) { return render(JSON.parse(pageText), csv); }, function () {
+      return decrypt(raw, D.csv).then(function (csv) {
+        var ids = Object.keys(D.extra || {});
+        return Promise.all(ids.map(function (id) { return decrypt(raw, D.extra[id]); })).then(function (texts) {
+          var extra = {}; ids.forEach(function (id, i) { extra[id] = texts[i]; });
+          return render(JSON.parse(pageText), csv, extra);
+        });
+      }, function () {
         var err = new Error('stale'); err.stale = true; throw err;
       });
     });

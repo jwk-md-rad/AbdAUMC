@@ -3,7 +3,8 @@
  * Bouwt de met een wachtwoord versleutelde pagina's.
  *
  * De leesbare bronnen staan in src/ (niet in git):
- *   src/index.html, src/bezetting.html, src/analyse.html, src/bezetting-abdomen-2023-2026.csv
+ *   src/index.html, src/bezetting.html, src/analyse.html, src/bezetting-abdomen-2023-2026.csv,
+ *   src/vooruitblik-nov-dec-2026.csv (planning, alleen versleuteld in de repo)
  *
  * Gebruik (Node 18 of nieuwer, geen extra pakketten nodig):
  *   SITE_PASSWORD='...' node tools/build.mjs           bouw de site uit src/
@@ -27,7 +28,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'src');
 const PAGES = ['index', 'bezetting', 'analyse'];
 const CSV = 'bezetting-abdomen-2023-2026.csv';
-const SRC_FILES = [...PAGES.map((p) => p + '.html'), CSV];
+// Extra datasets (versleuteld meegestuurd, beschikbaar als dash.data(id))
+const EXTRA = { vooruitblik: 'vooruitblik-nov-dec-2026.csv' };
+const SRC_FILES = [...PAGES.map((p) => p + '.html'), CSV, ...Object.values(EXTRA)];
 const ITER = 600000;
 
 const b64 = (buf) => Buffer.from(buf).toString('base64');
@@ -125,7 +128,9 @@ async function build(pw) {
   mkdirSync(join(ROOT, 'data'), { recursive: true });
 
   const csv = readFileSync(join(SRC, CSV), 'utf8');
-  const data = { kdf, csv: await encrypt(key, csv), csvName: CSV };
+  const extra = {};
+  for (const [id, f] of Object.entries(EXTRA)) extra[id] = await encrypt(key, readFileSync(join(SRC, f), 'utf8'));
+  const data = { kdf, csv: await encrypt(key, csv), csvName: CSV, extra };
   const dataJs = '// Versleuteld met tools/build.mjs\nwindow.ENC_DATA = ' + JSON.stringify(data) + ';\n';
   writeFileSync(join(ROOT, 'data', 'data.enc.js'), dataJs);
   const asset = (f) => ver(readFileSync(join(ROOT, 'assets', f), 'utf8'));
