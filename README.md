@@ -5,7 +5,8 @@ op basis van het Medspace-rooster (week 1 2023 t/m week 44 2026).
 
 - **[MT-overzicht](index.html)**: in één scherm hoe de sectie ervoor staat: kerncijfers, signalen en trend.
 - **[Bezetting abdomenradiologie](bezetting.html)**: interactief overzicht van FTE per taak per periode.
-- **[Analyse FTE abdomen verslag](analyse.html)**: analyse van de tijd voor abdomen verslag, met vergelijking van jaren of zelfgekozen periodes, spoeddekking en een **vooruitblik nov–dec 2026** op basis van het geplande rooster.
+- **[Analyse verslag – retrospectief](analyse.html)**: analyse van de tijd voor abdomen verslag 2023–2026, met vergelijking van jaren of zelfgekozen periodes, spoeddekking en afwezigheid.
+- **[Analyse verslag – prospectief](vooruitblik.html)**: geplande verslagcapaciteit nov–dec 2026 t.o.v. eerdere jaren en sep–okt 2026 (planning, stand 8 november 2026).
 
 Online via GitHub Pages: https://jwk-md-rad.github.io/AbdAUMC/
 
@@ -26,7 +27,7 @@ op GitHub. Na het inloggen ontsleutelt de browser alles lokaal.
 
 | Pad | Inhoud |
 | --- | --- |
-| `index.html`, `bezetting.html`, `analyse.html` | Wachtwoordscherm; de inhoud staat versleuteld in `data/` |
+| `index.html`, `bezetting.html`, `analyse.html`, `vooruitblik.html` | Wachtwoordscherm; de inhoud staat versleuteld in `data/` |
 | `data/*.enc.js` | Versleutelde pagina-inhoud en data (rooster 2023–okt 2026 en de planning nov–dec 2026) |
 | `src.enc` | Versleutelde kopie van de leesbare bronnen (`src/`) |
 | `assets/gate.js` | Ontsleutelt na het inloggen |
@@ -43,7 +44,7 @@ De leesbare bronnen staan in `src/`, dat **niet** in git staat (zie `.gitignore`
 # 1. Bronnen terugzetten uit src.enc (vraagt om het wachtwoord)
 node tools/build.mjs --unpack
 
-# 2. Pas src/index.html, src/bezetting.html, src/analyse.html, src/bezetting-abdomen-2023-2026.csv
+# 2. Pas src/index.html, src/bezetting.html, src/analyse.html, src/vooruitblik.html, src/bezetting-abdomen-2023-2026.csv
 #    of src/vooruitblik-nov-dec-2026.csv (geplande weken; niet in de hoofd-CSV zetten) aan
 
 # 3. Opnieuw versleutelen en de pagina's bouwen (vraagt om het wachtwoord)

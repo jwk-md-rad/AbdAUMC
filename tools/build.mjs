@@ -3,7 +3,7 @@
  * Bouwt de met een wachtwoord versleutelde pagina's.
  *
  * De leesbare bronnen staan in src/ (niet in git):
- *   src/index.html, src/bezetting.html, src/analyse.html, src/bezetting-abdomen-2023-2026.csv,
+ *   src/index.html, src/bezetting.html, src/analyse.html, src/vooruitblik.html, src/bezetting-abdomen-2023-2026.csv,
  *   src/vooruitblik-nov-dec-2026.csv (planning, alleen versleuteld in de repo)
  *
  * Gebruik (Node 18 of nieuwer, geen extra pakketten nodig):
@@ -26,7 +26,7 @@ import { createInterface } from 'node:readline';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'src');
-const PAGES = ['index', 'bezetting', 'analyse'];
+const PAGES = ['index', 'bezetting', 'analyse', 'vooruitblik'];
 const CSV = 'bezetting-abdomen-2023-2026.csv';
 // Extra datasets (versleuteld meegestuurd, beschikbaar als dash.data(id))
 const EXTRA = { vooruitblik: 'vooruitblik-nov-dec-2026.csv' };
