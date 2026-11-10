@@ -7,6 +7,7 @@ op basis van het Medspace-rooster (week 1 2023 t/m week 44 2026).
 - **[Bezetting abdomenradiologie](bezetting.html)**: interactief overzicht van FTE per taak per periode.
 - **[Analyse verslag – retrospectief](analyse.html)**: analyse van de tijd voor abdomen verslag 2023–2026, met vergelijking van jaren of zelfgekozen periodes, spoeddekking en afwezigheid.
 - **[Analyse verslag – prospectief](vooruitblik.html)**: geplande verslagcapaciteit nov–dec 2026 t.o.v. eerdere jaren en sep–okt 2026 (planning, stand 8 november 2026).
+- **[Tijdsbesteding fellow](fellow.html)**: hoe de tijd van de abdomenfellow (0,8-aanstelling, start nov 2025) verdeeld is over abdomenwerk, wetenschap, diensten en afwezigheid; nov 2025 – okt 2026 gerealiseerd, nov–dec 2026 planning.
 
 Online via GitHub Pages: https://jwk-md-rad.github.io/AbdAUMC/
 
@@ -23,13 +24,27 @@ op GitHub. Na het inloggen ontsleutelt de browser alles lokaal.
 - Wachtwoord wijzigen = opnieuw bouwen (zie hieronder) met het nieuwe wachtwoord.
   Wie het oude wachtwoord kent, kan oude versies uit de git-geschiedenis nog openen.
 
+### Tweede wachtwoord (Tijdsbesteding fellow)
+
+`fellow.html` en de fellowdata hebben een **eigen wachtwoord**. Ze zijn versleuteld met een aparte
+sleutel; de bronnen staan in `src-fellow.enc` (niet in `src.enc`). Met het algemene wachtwoord zijn
+ze niet te openen.
+
+```sh
+# bouwen: beide wachtwoorden meegeven (anders vraagt het script erom)
+SITE_PASSWORD='…' SITE_PASSWORD_FELLOW='…' node tools/build.mjs
+# bronnen terugzetten, inclusief de fellowbestanden
+SITE_PASSWORD='…' SITE_PASSWORD_FELLOW='…' node tools/build.mjs --unpack
+```
+
 ## Structuur
 
 | Pad | Inhoud |
 | --- | --- |
-| `index.html`, `bezetting.html`, `analyse.html`, `vooruitblik.html` | Wachtwoordscherm; de inhoud staat versleuteld in `data/` |
+| `index.html`, `bezetting.html`, `analyse.html`, `vooruitblik.html`, `fellow.html` | Wachtwoordscherm; de inhoud staat versleuteld in `data/` |
 | `data/*.enc.js` | Versleutelde pagina-inhoud en data (rooster 2023–okt 2026 en de planning nov–dec 2026) |
-| `src.enc` | Versleutelde kopie van de leesbare bronnen (`src/`) |
+| `src.enc` | Versleutelde kopie van de leesbare bronnen (`src/`), zonder de fellowbestanden |
+| `src-fellow.enc` | Fellowbronnen, versleuteld met het tweede wachtwoord |
 | `assets/gate.js` | Ontsleutelt na het inloggen |
 | `assets/dash.js` | Kleine data-laag die de CSV inleest en de grafieken tekent |
 | `assets/theme.css` | Kleuren en opmaak (licht en donker) |
@@ -45,7 +60,8 @@ De leesbare bronnen staan in `src/`, dat **niet** in git staat (zie `.gitignore`
 node tools/build.mjs --unpack
 
 # 2. Pas src/index.html, src/bezetting.html, src/analyse.html, src/vooruitblik.html, src/bezetting-abdomen-2023-2026.csv
-#    of src/vooruitblik-nov-dec-2026.csv (geplande weken; niet in de hoofd-CSV zetten) aan
+#    src/vooruitblik-nov-dec-2026.csv (geplande weken; niet in de hoofd-CSV zetten),
+#    src/fellow.html of src/fellow-tijdsbesteding.csv aan
 
 # 3. Opnieuw versleutelen en de pagina's bouwen (vraagt om het wachtwoord)
 node tools/build.mjs

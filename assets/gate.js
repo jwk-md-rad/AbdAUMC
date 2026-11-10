@@ -48,12 +48,12 @@
   function render(page, csv, extra) {
     var st = document.createElement('style'); st.textContent = page.style; document.head.append(st);
     document.getElementById('dash-root').innerHTML = page.html;
-    window.DASH_DATA = {bezetting: {csv: csv}};
+    window.DASH_DATA = csv == null ? {} : {bezetting: {csv: csv}};
     for (var id in (extra || {})) window.DASH_DATA[id] = {csv: extra[id]};
     return loadScript('assets/dash.js' + (window.DASH_V ? '?v=' + window.DASH_V : '')).then(function () {
       var s = document.createElement('script'); s.textContent = page.script; document.body.append(s);
       var link = document.getElementById('csv-link');
-      if (link) {
+      if (link && csv != null) {
         link.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
         link.download = D.csvName || 'data.csv';
         link.hidden = false;
@@ -66,7 +66,19 @@
     });
   }
 
+  function decryptAll(raw, blobs) {
+    var ids = Object.keys(blobs || {});
+    return Promise.all(ids.map(function (id) { return decrypt(raw, blobs[id]); })).then(function (texts) {
+      var out = {}; ids.forEach(function (id, i) { out[id] = texts[i]; }); return out;
+    });
+  }
   function unlock(raw) {
+    if (P.own) {
+      // Pagina met een eigen wachtwoord: alleen de eigen data, niet de algemene data.
+      return decrypt(raw, P.page).then(function (pageText) {
+        return decryptAll(raw, P.extra).then(function (extra) { return render(JSON.parse(pageText), null, extra); });
+      });
+    }
     return decrypt(raw, P.page).then(function (pageText) {
       return decrypt(raw, D.csv).then(function (csv) {
         var ids = Object.keys(D.extra || {});
